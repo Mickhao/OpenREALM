@@ -169,3 +169,6 @@ cmake \
     ..
 make -j4
 sudo make install
+
+
+#下载各类安装包

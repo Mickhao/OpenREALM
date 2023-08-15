@@ -6,6 +6,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
+
 namespace realm
 {
 namespace analysis
@@ -32,3 +33,5 @@ cv::Mat convertToColorMapFromCVC3(const cv::Mat &img, const cv::Mat &mask);
 } // namespace realm
 
 #endif //PROJECT_ANALYSIS_H
+
+

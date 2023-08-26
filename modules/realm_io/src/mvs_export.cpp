@@ -106,10 +106,13 @@ void MvsExport::saveFrames(const std::vector<Frame::Ptr> &frames, const std::str
     }
   }
 
+  //遍历存储稀疏点云数据的 sparse_cloud_map
   for (const auto& it : sparse_cloud_map)
+  //将每个点的数据（包括位置和视图信息）添加到 interface 中的 vertices 列表中
     interface.vertices.push_back(it.second);
-
+  //将前面定义的相机平台信息（包括相机和姿态信息）添加到 interface 中的 platforms 列表中
   interface.platforms.push_back(platform);
 
+  //将收集到的所有信息保存为一个MVS数据文件
   MvsArchive::SerializeSave(interface, directory + "/data.mvs");
 }

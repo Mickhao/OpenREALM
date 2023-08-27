@@ -189,25 +189,33 @@ cv::Mat Ov2Slam::convertPose(const Eigen::Matrix<double, 3, 4> &mat_eigen)
 //获取已跟踪的地图点
 PointCloud::Ptr Ov2Slam::getTrackedMapPoints()
 {
+  //创建用于存储点云坐标和点云 ID 的列表 points 和 point_ids
   std::vector<uint32_t> point_ids;
   cv::Mat points;
 
+  //从 m_slam 对象中获取当前帧的地图关键点，存储在 keypoints 中
   std::unordered_map<int, Keypoint> keypoints = m_slam->pcurframe_->mapkps_;
   points.reserve(keypoints.size());
 
+  //遍历 keypoints 中的每个关键点
   for (const auto& kpt : keypoints)
   {
+    //从 m_slam 的地图中检索相应的 MapPoint 对象
      std::shared_ptr<MapPoint> point_o2v = m_slam->pmap_->getMapPoint(kpt.first);
-
+    
+    //如果是有效的且不是坏点的 MapPoint
      if (point_o2v != nullptr && point_o2v->is3d_ && !point_o2v->isBad())
      {
+      //获取三维点坐标
        Eigen::Vector3d point_eigen = point_o2v->getPoint();
+       //将其转换为 cv::Mat 格式
        cv::Mat point_cv = (cv::Mat_<double>(1, 3) << point_eigen.x(), point_eigen.y(), point_eigen.z());
+       //将其添加到 points 列表中
        points.push_back(point_cv);
-
+      //将点的 ID 添加到 point_ids 列表中
        point_ids.push_back(static_cast<uint32_t>(point_o2v->lmid_));
      }
   }
-
+  //根据获取的点云坐标和点云 ID，创建并返回一个 PointCloud 对象的共享指针
   return std::make_shared<PointCloud>(point_ids, points);
 }

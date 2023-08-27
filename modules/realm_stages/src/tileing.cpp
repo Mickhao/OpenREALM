@@ -34,17 +34,21 @@ Tileing::Tileing(const StageSettings::Ptr &stage_set, double rate)
 {
   std::cout << "Stage [" << m_stage_name << "]: Created Stage with Settings: " << std::endl;
   stage_set->print();
-
+  //设置 m_warper 对象的目标 EPSG 代码为 3857
   m_warper.setTargetEPSG(3857);
+  //设置 m_warper 对象的线程数为 4
   m_warper.setNrofThreads(4);
 
+  //注册了一个异步数据准备函数
   registerAsyncDataReadyFunctor([=]{ return !m_buffer.empty(); });
 }
 
+//析构函数
 Tileing::~Tileing()
 {
   if (m_tile_cache)
   {
+    //通知 m_tile_cache 完成工作的请求
     m_tile_cache->requestFinish();
     m_tile_cache->join();
   }
@@ -54,7 +58,7 @@ void Tileing::addFrame(const Frame::Ptr &frame)
 {
   // First update statistics about incoming frame rate
   updateStatisticsIncoming();
-
+  //检查传入的帧数据是否包含必要的数据
   if (!frame->getSurfaceModel() || !frame->getOrthophoto())
   {
     LOG_F(INFO, "Input frame is missing data. Dropping!");
@@ -62,7 +66,7 @@ void Tileing::addFrame(const Frame::Ptr &frame)
     return;
   }
   std::unique_lock<std::mutex> lock(m_mutex_buffer);
-  m_buffer.push_back(frame);
+  m_buffer.push_back(frame);//将帧数据添加到缓冲区中
 
   // Ringbuffer implementation for buffer with no pose
   if (m_buffer.size() > m_queue_size)
@@ -89,6 +93,7 @@ bool Tileing::process()
     LOG_F(INFO, "Processing frame #%u...", frame->getFrameId());
 
     if (m_utm_reference == nullptr)
+      //使用当前帧的 GNSS UTM 数据创建一个 UTMPose 对象
       m_utm_reference = std::make_shared<UTMPose>(frame->getGnssUtm());
 
     //=======================================//
@@ -97,6 +102,9 @@ bool Tileing::process()
     //
     //=======================================//
 
+  //首先将地表模型和正射影像合并成一个地图
+  //然后将每个图层单独进行 Web Mercator 投影（EPSG:3857）
+  //并将它们重新组合成一个地图
     t = getCurrentTimeMilliseconds();
 
     CvGridMap::Ptr orthophoto = frame->getOrthophoto();
@@ -133,6 +141,8 @@ bool Tileing::process()
     //
     //=======================================//
 
+    //使用 m_map_tiler 对 EPSG3857 投影后的地图进行瓦片化
+    //生成一组在最大缩放级别上的瓦片
     t = getCurrentTimeMilliseconds();
 
     std::map<int, MapTiler::TiledMap> tiled_map_max_zoom = m_map_tiler->createTiles(map_3857);
@@ -146,6 +156,8 @@ bool Tileing::process()
     //
     //=======================================//
 
+    //对最大缩放级别上的瓦片进行混合
+    //将混合后的瓦片添加到 m_tile_cache 中
     t = getCurrentTimeMilliseconds();
 
     int zoom_level_max = tiled_map_max_zoom.begin()->first;
@@ -183,7 +195,7 @@ bool Tileing::process()
     //           and push to cache
     //
     //=======================================//
-
+    //计算一系列缩放级别范围内的瓦片，然后将这些瓦片添加到 m_tile_cache 中
     t = getCurrentTimeMilliseconds();
 
     // To save computational load we remove layers, that we are not interested in displaying as a whole.
@@ -225,7 +237,7 @@ bool Tileing::process()
     //   Step 5: Publish & Save
     //
     //=======================================//
-
+    //发布地图数据，同时保存地图数据
     // Publishings every iteration
     LOG_F(INFO, "Publishing...");
 
@@ -239,21 +251,25 @@ bool Tileing::process()
     saveIter(frame->getFrameId(), map_update);
     LOG_F(INFO, "Timing [Saving]: %lu ms", getCurrentTimeMilliseconds()-t);
 
-    has_processed = true;
+    has_processed = true;//表示已经进行了处理
   }
   return has_processed;
 }
 
+//将两个瓦片数据合并
 Tile::Ptr Tileing::merge(const Tile::Ptr &t1, const Tile::Ptr &t2)
 {
   if (t2->data()->empty())
     throw(std::runtime_error("Error: Tile data is empty. Likely a multi threading problem!"));
 
+    //使用 REALM_OVERWRITE_ZERO，
+  //即只有在目标瓦片的对应位置没有数据时，才会将源瓦片的数据添加到目标瓦片
   t1->data()->add(*t2->data(), REALM_OVERWRITE_ZERO, false);
 
   return t1;
 }
 
+//在两个瓦片数据之间进行混合
 Tile::Ptr Tileing::blend(const Tile::Ptr &t1, const Tile::Ptr &t2)
 {
   CvGridMap::Ptr& src = t2->data();
@@ -341,6 +357,7 @@ void Tileing::saveAll()
 //  }
 }
 
+//重置
 void Tileing::reset()
 {
   LOG_F(INFO, "Reseted!");
@@ -366,10 +383,11 @@ Frame::Ptr Tileing::getNewFrame()
 void Tileing::initStageCallback()
 {
   // Stage directory first
-  if (!io::dirExists(m_stage_path))
+  if (!io::dirExists(m_stage_path)) //检查阶段路径是否存在
     io::createDir(m_stage_path);
 
   // Then sub directories
+  //创建子目录
   if (!io::dirExists(m_stage_path + "/tiles"))
     io::createDir(m_stage_path + "/tiles");
 
@@ -377,7 +395,9 @@ void Tileing::initStageCallback()
   // across different devies. Consequently it is not created in the constructor but here.
   if (!m_map_tiler)
   {
+    //创建一个新的 MapTiler 对象
     m_map_tiler = std::make_shared<MapTiler>(true);
+    //创建一个新的 MapTiler 对象
     m_tile_cache = std::make_shared<TileCache>("tile_cache", 500, m_stage_path + "/tiles", false);
     m_tile_cache->start();
   }
@@ -414,6 +434,7 @@ void Tileing::publish(const Frame::Ptr &frame, const CvGridMap::Ptr &map, const 
 //  }
 }
 
+//返回当前输入缓冲区中的帧数量
 uint32_t Tileing::getQueueDepth()
 {
   return m_buffer.size();

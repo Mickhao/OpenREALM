@@ -11,6 +11,7 @@
 using namespace realm;
 using namespace stages;
 
+//初始化 Mosaicing 阶段的各种设置和参数
 Mosaicing::Mosaicing(const StageSettings::Ptr &stage_set, double rate)
     : StageBase("mosaicing", (*stage_set)["path_output"].toString(), rate, (*stage_set)["queue_size"].toInt(), bool((*stage_set)["log_to_file"].toInt())),
       m_utm_reference(nullptr),
@@ -40,18 +41,22 @@ Mosaicing::Mosaicing(const StageSettings::Ptr &stage_set, double rate)
                        (*stage_set)["save_num_obs_all"].toInt() > 0,
                        (*stage_set)["save_dense_ply"].toInt() > 0})
 {
+  //显示阶段的名称和设置信息
   std::cout << "Stage [" << m_stage_name << "]: Created Stage with Settings: " << std::endl;
   stage_set->print();
 
   if (m_settings_save.save_ortho_gtiff_all)
   {
+    //建一个名为 mosaicing_gtiff_writer 的 io::GDALContinuousWriter 对象
     m_gdal_writer.reset(new io::GDALContinuousWriter("mosaicing_gtiff_writer", 100, true));
+    //启动写入器
     m_gdal_writer->start();
   }
-
+  //注册一个异步数据准备函数
   registerAsyncDataReadyFunctor([=]{ return !m_buffer.empty(); });
 }
 
+//析构函数
 Mosaicing::~Mosaicing()
 {
 }
@@ -59,19 +64,24 @@ Mosaicing::~Mosaicing()
 void Mosaicing::addFrame(const Frame::Ptr &frame)
 {
   // First update statistics about incoming frame rate
+  //更新有关传入帧速率的统计信息
   updateStatisticsIncoming();
-
+  //检查传入帧是否具有表面模型（observed map）和正射影像（orthophoto）
   if (!frame->getSurfaceModel() || !frame->getOrthophoto())
   {
     LOG_F(INFO, "Input frame missing observed map. Dropping!");
     return;
   }
+  //获取一个独占锁
   std::unique_lock<std::mutex> lock(m_mutex_buffer);
+  //将传入的帧指针添加到缓冲区中
   m_buffer.push_back(frame);
 
   // Ringbuffer implementation for buffer with no pose
+  //如果缓冲区的大小超过预设的队列大小
   if (m_buffer.size() > m_queue_size)
   {
+    //从队列前面弹出一个帧，同时更新有关跳过帧的统计信息
     m_buffer.pop_front();
     updateStatisticsSkippedFrame();
   }
@@ -89,10 +99,12 @@ bool Mosaicing::process()
     // Prepare output of incremental map update
     CvGridMap::Ptr map_update;
 
+    //从缓冲区中获取一帧数据，其中包含表面模型和正射影像
     Frame::Ptr frame = getNewFrame();
     CvGridMap::Ptr surface_model = frame->getSurfaceModel();
     CvGridMap::Ptr orthophoto = frame->getOrthophoto();
 
+    //创建一个 CvGridMap 对象，将表面模型和正射影像添加到其中
     CvGridMap::Ptr map = std::make_shared<CvGridMap>(orthophoto->roi(), orthophoto->resolution());
     map->add(*surface_model, REALM_OVERWRITE_ALL, false);
     map->add(*orthophoto, REALM_OVERWRITE_ALL, false);
@@ -100,13 +112,17 @@ bool Mosaicing::process()
     LOG_F(INFO, "Processing frame #%u...", frame->getFrameId());
 
     // Use surface normals only if setting was set to true AND actual data has normals
+    //判断是否使用表面法线
     m_use_surface_normals = (m_use_surface_normals && map->exists("elevation_normal"));
-
+    
+    //如果为空,初始化 UTM 坐标参考和全局地图对象
     if (m_utm_reference == nullptr)
       m_utm_reference = std::make_shared<UTMPose>(frame->getGnssUtm());
+    //检查 m_global_map 是否为空
     if (m_global_map == nullptr)
     {
       LOG_F(INFO, "Initializing global map...");
+      //将 map 赋值给 m_global_map
       m_global_map = map;
 
       // Incremental update is equal to global map on initialization
@@ -115,7 +131,7 @@ bool Mosaicing::process()
     else
     {
       LOG_F(INFO, "Adding new map data to global map...");
-
+      //地图数据的融合
       t = getCurrentTimeMilliseconds();
       (*m_global_map).add(*map, REALM_OVERWRITE_ZERO, true);
       LOG_F(INFO, "Timing [Add New Map]: %lu ms", getCurrentTimeMilliseconds()-t);
@@ -143,10 +159,12 @@ bool Mosaicing::process()
       }
 
       LOG_F(INFO, "Extracting updated map...");
+      //创建一个更新的地图 map_update,包括 "color_rgb" 和 "elevation" 层的数据
       map_update = std::make_shared<CvGridMap>(m_global_map->getSubmap({"color_rgb", "elevation"}, overlap.first->roi()));
     }
 
     // Publishings every iteration
+    //发布更新后的地图数据和当前帧数据
     LOG_F(INFO, "Publishing...");
 
     t = getCurrentTimeMilliseconds();
@@ -155,6 +173,7 @@ bool Mosaicing::process()
 
 
     // Savings every iteration
+    //保存当前帧数据和更新后的地图数据
     t = getCurrentTimeMilliseconds();
     saveIter(frame->getFrameId(), map_update);
     LOG_F(INFO, "Timing [Saving]: %lu ms", getCurrentTimeMilliseconds()-t);
@@ -167,6 +186,7 @@ bool Mosaicing::process()
   return has_processed;
 }
 
+//地图数据的融合
 CvGridMap Mosaicing::blend(CvGridMap::Overlap *overlap)
 {
   // Overlap between global mosaic (ref) and new data (inp)
@@ -179,9 +199,11 @@ CvGridMap Mosaicing::blend(CvGridMap::Overlap *overlap)
   // There are aparently a number of issues with NaN comparisons breaking in various ways.  See:
   // https://github.com/opencv/opencv/issues/16465
   // To avoid these, use patchNaNs before using boolean comparisons
+  //比较两个地图的 "elevation_angle" 层来确定融合的位置，生成mask
   cv::patchNaNs(ref["elevation_angle"],0);
   cv::Mat mask = (src["elevation_angle"] > ref["elevation_angle"]);
 
+  //将重叠区域的数据从 src 地图中复制到 ref 地图中，并使用融合的遮罩进行掩码操作
   src["color_rgb"].copyTo(ref["color_rgb"], mask);
   src["elevation"].copyTo(ref["elevation"], mask);
   src["elevation_angle"].copyTo(ref["elevation_angle"], mask);
@@ -191,9 +213,12 @@ CvGridMap Mosaicing::blend(CvGridMap::Overlap *overlap)
   return ref;
 }
 
+//保存地图数据的迭代结果
 void Mosaicing::saveIter(uint32_t id, const CvGridMap::Ptr &map_update)
 {
   // Check NaN
+  //检查地图中是否存在 NaN 值
+  //根据设置将不同层的数据保存为图像文件或者 GeoTIFF 文件
   cv::Mat valid = ((*m_global_map)["elevation"] == (*m_global_map)["elevation"]);
 
   if (m_settings_save.save_ortho_rgb_all)
@@ -212,8 +237,10 @@ void Mosaicing::saveIter(uint32_t id, const CvGridMap::Ptr &map_update)
     //io::saveGeoTIFF(*map_update, "color_rgb", _utm_reference->zone, io::createFilename(_stage_path + "/ortho/ortho_", id, ".tif"));
 }
 
+//将整个地图数据保存为图像、GeoTIFF 文件和点云等格式
 void Mosaicing::saveAll()
 {
+  //检查是否已创建全局地图，并且该地图是否包含 "elevation" 层的数据
   if(!m_global_map || !m_global_map->exists("elevation"))
   {
     LOG_F(ERROR, "No global map created, skipping saveAll()");
@@ -221,8 +248,9 @@ void Mosaicing::saveAll()
   }
 
   // Check NaN
+  //检查地图中的 NaN 值
   cv::Mat valid = ((*m_global_map)["elevation"] == (*m_global_map)["elevation"]);
-
+  //根据设置保存不同层的数据
   // 2D map output
   if (m_settings_save.save_ortho_rgb_one)
     io::saveCvGridMapLayer(*m_global_map, m_utm_reference->zone, m_utm_reference->band, "color_rgb", m_stage_path + "/ortho/ortho.png");
@@ -246,6 +274,7 @@ void Mosaicing::saveAll()
   //io::MvsExport::saveFrames(m_frames, m_stage_path + "/mvs");
 
   // 3D Point cloud output
+  //将稠密点云数据保存为 PLY 文件,前提宏被定义
 #if WITH_PCL
   if (m_settings_save.save_dense_ply)
   {
@@ -267,14 +296,17 @@ void Mosaicing::saveAll()
   }
 }
 
+//在阶段需要重置时被调用
 void Mosaicing::reset()
 {
   LOG_F(INFO, "Reseted!");
 }
 
+//在阶段即将结束时被调用
 void Mosaicing::finishCallback()
 {
   // First polish results
+  //执行后处理操作
   runPostProcessing();
 
   if (m_gdal_writer != nullptr)
@@ -296,18 +328,23 @@ void Mosaicing::runPostProcessing()
 
 }
 
+//从缓冲区中获取一个帧对象
 Frame::Ptr Mosaicing::getNewFrame()
 {
   std::unique_lock<std::mutex> lock(m_mutex_buffer);
+  //从前面获取一个帧对象
   Frame::Ptr frame = m_buffer.front();
+  //从缓冲区中移除该帧，更新已处理帧的统计信息
   m_buffer.pop_front();
   updateStatisticsProcessedFrame();
   return std::move(frame);
 }
 
+//在阶段初始化时被调用
 void Mosaicing::initStageCallback()
 {
   // If we aren't saving any information, skip directory creation
+  //检查是否需要保存信息（日志或文件）
   if (!(m_log_to_file || m_settings_save.save_required()))
   {
     return;
@@ -315,9 +352,11 @@ void Mosaicing::initStageCallback()
 
   // Stage directory first
   if (!io::dirExists(m_stage_path))
+  //创建阶段目录 m_stage_path
     io::createDir(m_stage_path);
 
   // Then sub directories
+  //根据不同的保存设置创建其他子目录
   if (!io::dirExists(m_stage_path + "/elevation") && m_settings_save.save_elevation())
     io::createDir(m_stage_path + "/elevation");
   if (!io::dirExists(m_stage_path + "/elevation/color_map") && m_settings_save.save_elevation_map())
@@ -341,6 +380,7 @@ void Mosaicing::initStageCallback()
     io::createDir(m_stage_path + "/mvs");
 }
 
+//将阶段的各种设置信息和缓冲区的队列深度输出到日志中
 void Mosaicing::printSettingsToLog()
 {
   LOG_F(INFO, "### Stage process settings ###");
@@ -369,15 +409,19 @@ void Mosaicing::printSettingsToLog()
   LOG_F(INFO, "- save_dense_ply: %i", m_settings_save.save_dense_ply);
 }
 
+//返回当前缓冲区中的队列深度
 uint32_t Mosaicing::getQueueDepth() {
   return m_buffer.size();
 }
 
+//生成用于发布的三维网格的面（faces）
 std::vector<Face> Mosaicing::createMeshFaces(const CvGridMap::Ptr &map)
 {
   CvGridMap::Ptr mesh_sampled;
+  //是否需要对网格进行下采样
   if (m_downsample_publish_mesh > 10e-6)
   {
+    //进行下采样处理
     if (map && map->exists("elevation") && map->exists("color_rgb")) {
 
       // Downsampling was set by the user in settings
@@ -409,6 +453,7 @@ std::vector<Face> Mosaicing::createMeshFaces(const CvGridMap::Ptr &map)
   {
     LOG_F(INFO, "No downsampling of mesh publish...");
     // No downsampling was set
+    //用传入的 map 作为 mesh_sampled
     mesh_sampled = map;
   }
 
@@ -419,24 +464,31 @@ std::vector<Face> Mosaicing::createMeshFaces(const CvGridMap::Ptr &map)
   return std::vector<Face>();
 }
 
+//发布处理过程中的数据，包括图像和网格
 void Mosaicing::publish(const Frame::Ptr &frame, const CvGridMap::Ptr &map, const CvGridMap::Ptr &update, uint64_t timestamp)
 {
   cv::Mat valid = ((*m_global_map)["elevation"] == (*m_global_map)["elevation"]);
 
   // First update statistics about outgoing frame rate
+  //更新有关正在发布的帧速率的统计信息
   updateStatisticsOutgoing();
 
+  //将彩色图像和高程图像的颜色映射（使用JET颜色映射）发布到指定路径
   m_transport_img((*m_global_map)["color_rgb"], "output/rgb");
   m_transport_img(analysis::convertToColorMapFromCVC1((*m_global_map)["elevation"],
                                                       valid,
                                                       cv::COLORMAP_JET), "output/elevation");
+  //将完整地图以及更新后的部分地图（update）发布到不同的输出路径
   m_transport_cvgridmap(m_global_map->getSubmap({"color_rgb"}), m_utm_reference->zone, m_utm_reference->band, "output/full/ortho");
   m_transport_cvgridmap(update->getSubmap({"color_rgb"}), m_utm_reference->zone, m_utm_reference->band, "output/update/ortho");
   //_transport_cvgridmap(update->getSubmap({"elevation", "valid"}), _utm_reference->zone, _utm_reference->band, "output/update/elevation");
 
+  //据 m_publish_mesh_every_nth_kf 和 m_publish_mesh_nth_iter 的值，决定是否发布网格数据
   if (m_publish_mesh_every_nth_kf > 0 && m_publish_mesh_every_nth_kf == m_publish_mesh_nth_iter)
   {
+    //生成网格面数据
     std::vector<Face> faces = createMeshFaces(map);
+    //通过多线程将网格面数据发布到指定路径
     std::thread t(m_transport_mesh, faces, "output/mesh");
     t.detach();
     m_publish_mesh_nth_iter = 0;

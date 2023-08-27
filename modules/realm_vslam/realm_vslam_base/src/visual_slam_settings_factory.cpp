@@ -5,8 +5,10 @@
 
 using namespace realm;
 
+//工厂函数的入口点,根据设置文件中指定的方法类型加载对应的视觉SLAM设置
 VisualSlamSettings::Ptr VisualSlamSettingsFactory::load(const std::string &filepath, const std::string &directory)
 {
+  //从设置文件中提取 "type" 参数的值，指定要加载的视觉SLAM方法类型
   std::string method = VisualSlamSettings::sneakParameterFromFile<std::string>("type", filepath);
   if (method == "ORB_SLAM2")
     return loadOrbSlam2(filepath, directory);
@@ -25,6 +27,7 @@ VisualSlamSettings::Ptr VisualSlamSettingsFactory::load(const std::string &filep
   throw (std::invalid_argument("Error: Loading visual slam settings failed. Method '" + method + "' not recognized"));
 }
 
+//加载 ORB_SLAM2 的设置
 VisualSlamSettings::Ptr VisualSlamSettingsFactory::loadOrbSlam2(const std::string &filepath, const std::string &directory)
 {
   auto settings = std::make_shared<OrbSlamSettings>();
@@ -35,6 +38,7 @@ VisualSlamSettings::Ptr VisualSlamSettingsFactory::loadOrbSlam2(const std::strin
   return std::move(settings);
 }
 
+//加载 OPEN_VSLAM 的设置
 VisualSlamSettings::Ptr VisualSlamSettingsFactory::loadOpenVslam(const std::string &filepath, const std::string &directory)
 {
   auto settings = std::make_shared<OpenVslamSettings>();
@@ -49,6 +53,7 @@ template <typename T>
 VisualSlamSettings::Ptr VisualSlamSettingsFactory::loadDefault(const std::string &filepath, const std::string &directory)
 {
   auto settings = std::make_shared<T>();
+  //从文件中加载设置
   settings->loadFromFile(filepath);
   return settings;
 }

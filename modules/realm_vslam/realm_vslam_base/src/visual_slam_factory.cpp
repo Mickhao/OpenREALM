@@ -74,3 +74,5 @@ VisualSlamIF::Ptr VisualSlamFactory::create(const VisualSlamSettings::Ptr &vslam
 #endif
   throw std::invalid_argument("Error: SLAM framework '" + (*vslam_set)["type"].toString() + "' not found");
 }
+
+//根据提供的设置和类型，在不同的编译选项和实现中创建适用的视觉SLAM实例

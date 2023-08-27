@@ -3,6 +3,7 @@
 
 using namespace realm;
 
+//初始化 Ov2Slam 实例的参数和状态
 Ov2Slam::Ov2Slam(const VisualSlamSettings::Ptr &vslam_set, const CameraSettings::Ptr &cam_set)
   : m_resizing(1.0),
     m_id_previous(-1),
@@ -10,6 +11,7 @@ Ov2Slam::Ov2Slam(const VisualSlamSettings::Ptr &vslam_set, const CameraSettings:
     m_max_point_id(0),
     m_base_point_id(0)
 {
+  //从 vslam_set 中读取并设置不同的视觉SLAM参数
   m_resizing = (*vslam_set)["resizing"].toDouble();
 
   m_slam_params = std::make_shared<SlamParams>();
@@ -79,10 +81,13 @@ Ov2Slam::Ov2Slam(const VisualSlamSettings::Ptr &vslam_set, const CameraSettings:
   m_slam_params->p1l_ = (*cam_set)["p1"].toDouble();
   m_slam_params->p2l_ = (*cam_set)["p2"].toDouble();
 
+  //计算图像宽度在图像网格中占据多少个单元格
   double nbwcells = ceil( m_slam_params->img_left_w_ / (double)m_slam_params->nmaxdist_ );
+  //计算图像高度在图像网格中占据多少个单元格
   double nbhcells = ceil( m_slam_params->img_left_h_ / (double)m_slam_params->nmaxdist_ );
   m_slam_params->nbmaxkps_ = static_cast<int>(nbwcells * nbhcells);
 
+  //SlamManager 实例化
   m_slam.reset(new SlamManager(m_slam_params));
 }
 
@@ -93,7 +98,7 @@ Ov2Slam::~Ov2Slam()
 
 void Ov2Slam::reset()
 {
-  m_slam->reset();
+  m_slam->reset();//重置 SLAM 算法的内部状态和数据
   m_id_previous = -1;
 }
 
@@ -101,14 +106,18 @@ void Ov2Slam::close()
 {
 }
 
+//用于跟踪一个帧，并根据跟踪结果更新状态
 VisualSlamIF::State Ov2Slam::track(Frame::Ptr &frame, const cv::Mat &T_c2w_initial)
 {
   // Set image resizing accoring to settings
+  //根据设置的图像缩放因子，调整当前帧的图像尺寸
   frame->setImageResizeFactor(m_resizing);
 
+  //获取帧的时间戳，并将其转换为秒数
   const double timestamp = static_cast<double>(frame->getTimestamp())/10e3;
   LOG_IF_F(INFO, true, "Time stamp of frame: %4.2f [s]", timestamp);
-
+  
+  //从帧中获取调整后的灰度图像
   cv::Mat img = frame->getResizedImageRaw();
 
   if (img.channels() == 3)
@@ -116,24 +125,31 @@ VisualSlamIF::State Ov2Slam::track(Frame::Ptr &frame, const cv::Mat &T_c2w_initi
   else if(img.channels() == 4)
     cv::cvtColor(img, img, cv::COLOR_BGRA2GRAY);
 
+    //将灰度图像输入到 SLAM 算法中
   m_slam->addNewMonoImage(timestamp, img);
+  //运行 SLAM 的处理
   m_slam->spin();
-
+  //从 SLAM 的结果中获取相机的位姿 T_c2w
   cv::Mat T_c2w = convertPose(m_slam->pcurframe_->Twc_.matrix3x4());
 
   if (m_slam_params->bvision_init_)
   {
     if (m_id_previous == -1)
     {
+      //将帧的视觉位姿设置为 T_c2w
       frame->setVisualPose(T_c2w);
+      //设置稀疏点云为跟踪的地图点
       frame->setSparseCloud(getTrackedMapPoints(), true);
+      //将 m_id_previous 设置为当前帧的关键帧 ID
       m_id_previous = m_slam->pcurframe_->kfid_;
       return State::INITIALIZED;
     }
     else if (m_id_previous < m_slam->pcurframe_->kfid_)
     {
+      //更新帧的视觉位姿和稀疏点云
       frame->setVisualPose(T_c2w);
       frame->setSparseCloud(getTrackedMapPoints(), true);
+      //更新为当前帧的关键帧 ID
       m_id_previous = m_slam->pcurframe_->kfid_;
       return State::KEYFRAME_INSERT;
     }
@@ -144,10 +160,11 @@ VisualSlamIF::State Ov2Slam::track(Frame::Ptr &frame, const cv::Mat &T_c2w_initi
       return State::FRAME_INSERT;
     }
   }
-
+  //表示状态丢失
   return State::LOST;
 }
 
+//绘制已跟踪的图像，并将结果存储在输入的 img 参数中
 bool Ov2Slam::drawTrackedImage(cv::Mat &img) const
 {
   img = m_slam->drawFrame();
@@ -159,6 +176,7 @@ void Ov2Slam::printSettingsToLog()
 
 }
 
+//将一个 3x4 的 Eigen 矩阵转换为一个 3x4 的 OpenCV Mat 对象
 cv::Mat Ov2Slam::convertPose(const Eigen::Matrix<double, 3, 4> &mat_eigen)
 {
   cv::Mat mat_cv = (cv::Mat_<double>(3, 4) <<
@@ -168,6 +186,7 @@ cv::Mat Ov2Slam::convertPose(const Eigen::Matrix<double, 3, 4> &mat_eigen)
   return mat_cv;
 }
 
+//获取已跟踪的地图点
 PointCloud::Ptr Ov2Slam::getTrackedMapPoints()
 {
   std::vector<uint32_t> point_ids;

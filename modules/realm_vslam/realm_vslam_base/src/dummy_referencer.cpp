@@ -11,12 +11,14 @@ DummyReferencer::DummyReferencer(const cv::Mat &T_c2g)
 {
 }
 
+//初始化虚拟的地理参考系统
 void DummyReferencer::init(const std::vector<Frame::Ptr> &frames)
 {
   LOG_F(WARNING, "This is a dummy georeferenciation. You have to manually provide the transformation from camera to world frame. "
                  "Not call to 'init()' possible!");
 }
 
+//取从相机坐标系到世界坐标系的变换矩阵
 cv::Mat DummyReferencer::getTransformation()
 {
   std::unique_lock<std::mutex> lock(m_mutex_t_c2g);

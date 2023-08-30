@@ -11,7 +11,7 @@ cv::Mat cvtToPointCloud(const cv::Mat &img3d, const cv::Mat &color, const cv::Ma
   //检查深度图像是否为空
   if (img3d.empty())
     throw(std::invalid_argument("Error: Depth map empty. Conversion to point cloud failed."));
-    //算图像的总像素数量
+    //计算图像的总像素数量
   size_t n = (size_t)img3d.cols*img3d.rows;
   //将深度图像重塑为一个 n 行 1 列的矩阵，其中每个元素是一个像素的深度值
   cv::Mat points = img3d.reshape(1, n);

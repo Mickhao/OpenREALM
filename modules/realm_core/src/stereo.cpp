@@ -5,6 +5,9 @@
 
 #include <realm_core/stereo.h>
 
+/*用于处理双目立体视觉的功能模块*/
+
+
 //用于计算双目立体视觉中的校正参数
 void realm::stereo::computeRectification(const Frame::Ptr &frame_left,
                                          const Frame::Ptr &frame_right,

@@ -2,6 +2,7 @@
 
 #include <realm_ortho/tile.h>
 
+/*封装瓦片数据*/
 using namespace realm;
 
 Tile::Tile(int zoom_level, int tx, int ty, const CvGridMap &map)

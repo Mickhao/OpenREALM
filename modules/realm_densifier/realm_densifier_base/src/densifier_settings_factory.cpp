@@ -2,7 +2,7 @@
 
 #include <realm_densifier_base/densifier_settings_factory.h>
 
-//根据文件中的配置加载不同的稠密化算法设置
+/*根据文件中的配置加载不同的稠密化算法设置*/
 using namespace realm;
 
 DensifierSettings::Ptr DensifierSettingsFactory::load(const std::string &filepath, const std::string &directory)

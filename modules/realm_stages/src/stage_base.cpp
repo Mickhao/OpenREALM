@@ -4,8 +4,11 @@
 
 #include <realm_stages/stage_base.h>
 
+/*处理阶段的抽象基类
+定义了一些纯虚函数来规范处理阶段的接口*/
 using namespace realm;
 
+//初始化
 StageBase::StageBase(const std::string &name, const std::string &path, double rate, int queue_size, bool log_to_file)
 : WorkerThreadBase("Stage [" + name + "]", static_cast<int64_t>(1/rate*1000.0), true),
   m_stage_name(name),

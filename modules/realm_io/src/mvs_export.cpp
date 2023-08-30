@@ -3,6 +3,8 @@
 
 #include <unordered_map>
 
+/*将一组图像帧以及与每帧关联的信息保存为一个特定格式的MVS数据文件
+MVS是一种用于生成三维场景模型的技术*/
 using namespace realm::io;
 
 void MvsExport::saveFrames(const std::vector<Frame::Ptr> &frames, const std::string &directory)

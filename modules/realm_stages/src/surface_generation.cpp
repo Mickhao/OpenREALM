@@ -4,6 +4,8 @@
 
 #include <realm_stages/surface_generation.h>
 
+/*从点云生成三维表面，并将其转换为网格或体素格式
+(OpenREALM框架的最后一个阶段)*/
 using namespace realm;
 using namespace stages;
 using namespace realm::ortho;

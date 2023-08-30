@@ -1,5 +1,6 @@
 #include <realm_core/point_cloud.h>
 
+/*实现了一个点云类 PointCloud，用于管理点云数据*/
 using namespace realm;
 
 //创建一个空的点云对象

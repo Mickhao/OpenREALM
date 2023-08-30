@@ -5,6 +5,7 @@
 
 #include <realm_core/plane_fitter.h>
 
+/*实现了拟合平面的功能，可以根据不同数量的点来估计平面，并计算平面的法向量和中心点*/
 namespace realm
 {
 
@@ -86,4 +87,3 @@ PlaneFitter::Point PlaneFitter::computeExactPlaneCentroid(const std::vector<Plan
 
 } // namespace realm
 
-//实现了拟合平面的功能，可以根据不同数量的点来估计平面，并计算平面的法向量和中心点

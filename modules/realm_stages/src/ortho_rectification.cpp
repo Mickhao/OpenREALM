@@ -4,6 +4,7 @@
 
 #include <realm_stages/ortho_rectification.h>
 
+/*图像变换和拼接成正射影像*/
 using namespace realm;
 using namespace stages;
 

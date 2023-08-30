@@ -4,6 +4,8 @@
 
 #include <fstream>
 
+/*对图像和数据的保存*/
+
 namespace realm
 {
 namespace io

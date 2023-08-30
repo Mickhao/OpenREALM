@@ -10,6 +10,8 @@
 
 #include <realm_core/cv_grid_map.h>
 
+/*保存地图中的高程数据和相关信息为PLY格式的文件*/
+
 namespace realm
 {
 namespace io

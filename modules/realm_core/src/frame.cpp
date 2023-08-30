@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <realm_core/frame.h>
+/*表示无人机拍摄的图像帧
+包含了图像数据，时间戳，位姿等信息
+提供了一些函数来获取图像的元数据
+*/
 
 namespace realm
 {

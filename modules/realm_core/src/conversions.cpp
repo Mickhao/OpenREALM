@@ -2,6 +2,7 @@
 
 #include <realm_core/conversions.h>
 
+/*使用GDAL库来进行坐标转换*/
 using namespace realm;
 /*'convertToUTM'函数先根据输入的经度计算所属的UTM带号和带号字母。
 然后创建两个'GRSpatialReference'对象，分别用于WGS84和UTM的坐标系
@@ -58,6 +59,7 @@ UTMPose gis::convertToUTM(const WGSPose &wgs)
 
   return UTMPose(x, y, wgs.altitude, wgs.heading, (uint8_t)zone, band);
 }
+
 /*创建两个 OGRSpatialReference 对象，分别用于UTM和WGS84的坐标系。
 对 ogr_utm 进行设置，指定UTM带号和北半球/南半球。
 对 ogr_wgs 进行设置，指定WGS84坐标系。
@@ -92,6 +94,7 @@ WGSPose gis::convertToWGS84(const UTMPose &utm)
 
   return WGSPose{y, x, utm.altitude, utm.heading};
 }
+
 /*定义了一个名为 initAxisMappingStrategy 的函数
 该函数的作用是根据 GDAL 版本的不同来初始化坐标轴映射策略。
 如果GDAL版本号大于等于3，就将坐标轴映射策略设为传统的 GIS 顺序
@@ -105,5 +108,3 @@ void gis::initAxisMappingStrategy(OGRSpatialReference *oSRS)
   }
 #endif
 }
-
-//GIS转换功能的实现

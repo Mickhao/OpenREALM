@@ -4,8 +4,8 @@
 
 #include <opencv2/highgui.hpp>
 
+/*将栅格数据进行投影变换*/
 using namespace realm;
-//将栅格数据进行投影变换的类 gis::GdalWarper 的实现
 
 //初始化
 gis::GdalWarper::GdalWarper()

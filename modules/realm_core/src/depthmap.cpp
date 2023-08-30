@@ -2,6 +2,7 @@
 
 #include <realm_core/depthmap.h>
 
+/*处理深度图像，包括存储图像数据、相机模型以及一些计算深度参数*/
 using namespace realm;
 
 Depthmap::Depthmap(const cv::Mat &data, const camera::Pinhole &cam)

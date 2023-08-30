@@ -5,6 +5,9 @@
 
 #include <eigen3/Eigen/Eigen>
 
+/*实现了一个复杂的地理参考系统
+通过计算帧之间的尺度变化和优化变换矩阵
+实现地理参考的初始化和更新*/
 using namespace realm;
 
 GeometricReferencer::GeometricReferencer(double th_error, int min_nrof_frames)

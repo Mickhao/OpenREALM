@@ -1,6 +1,10 @@
 #include <realm_vslam_base/ov2_slam.h>
 #include <realm_core/timer.h>
 
+
+/*管理基于单目视觉的 SLAM系统
+从输入帧中提取图像特征，执行 SLAM 过程
+更新帧的位姿和地图点*/
 using namespace realm;
 
 //初始化 Ov2Slam 实例的参数和状态

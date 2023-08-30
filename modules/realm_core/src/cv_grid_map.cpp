@@ -7,8 +7,11 @@
 #include <realm_core/loguru.h>
 #include <realm_core/cv_grid_map.h>
 
+/*CvGridMap 是一个用于表示网格地图的类
+是一个多层的矩阵结构，每一层都有一个名称和一个类型
+它可以存储不同类型的数据，如高程，正射影像，掩码等
+还提供了一些函数来进行网格地图之间的拼接，裁剪，插值等*/
 using namespace realm;
-//CvGridMap 是一个用于表示栅格地图的类，可以存储不同的图层信息
 
 //初始化地图的分辨率为 1.0
 CvGridMap::CvGridMap()

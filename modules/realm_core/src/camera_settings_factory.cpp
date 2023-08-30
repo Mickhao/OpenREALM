@@ -2,7 +2,10 @@
 
 #include <realm_core/camera_settings_factory.h>
 
+/*从文件中加载相机设置，并根据相机类型创建相应的设置对象*/
 using namespace realm;
+
+
 /*运用了'CameraSettingsFactory'类中的函数实现
 函数从给定的'.yaml'文件中读取相机模型的类型，
 如果模型类型为'pinhole'则调用'load<PinholeSettings>'来加载相机设置
@@ -17,6 +20,7 @@ CameraSettings::Ptr CameraSettingsFactory::load(const std::string &filepath)
   else
     throw(std::out_of_range("Error! Camera type '" + model_type + "' not recognized."));
 }
+
 /*函数从给定的'.yaml'文件中加载相机设置
 并创建一个指向类型<T>的相机设置对象的共享指针'settings'
 再从文件中加载设置
@@ -30,5 +34,3 @@ CameraSettings::Ptr CameraSettingsFactory::load(const std::string &filepath)
   settings->loadFromFile(filepath);
   return std::move(settings);
 }
-
-//相机设置工厂

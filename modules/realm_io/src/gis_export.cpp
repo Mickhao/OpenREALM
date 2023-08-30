@@ -6,9 +6,9 @@
 #include <realm_core/timer.h>
 #include <realm_io/gis_export.h>
 
+/*将地理网格数据保存为GeoTIFF文件*/
 using namespace realm;
 
-//
 void io::saveGeoTIFF(const CvGridMap &map,
                      const uint8_t &zone,
                      const std::string &filename,

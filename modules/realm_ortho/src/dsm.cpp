@@ -4,8 +4,8 @@
 
 #include <opencv2/imgproc.hpp>
 
+/*//数字地表模型*/
 using namespace realm::ortho;
-//处理数字地表模型
 
 //初始化成员变量，创建了一个网格地图并添加高程信息
 DigitalSurfaceModel::DigitalSurfaceModel(const cv::Rect2d &roi, double elevation)

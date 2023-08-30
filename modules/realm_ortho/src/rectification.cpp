@@ -3,8 +3,9 @@
 #include <realm_core/loguru.h>
 #include <realm_ortho/rectification.h>
 
+/*图像校正*/
 using namespace realm;
-//图像校正和表面重建
+
 
 //对给定的帧进行图像校正
 CvGridMap::Ptr ortho::rectify(const Frame::Ptr &frame)

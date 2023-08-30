@@ -3,9 +3,10 @@
 #include <realm_vslam_base/orb_slam.h>
 #include <realm_core/loguru.h>
 
+/*将 ORB-SLAM 框架集成在一起，用于执行视觉 SLAM*/
 using namespace realm;
 
-//始化 ORB-SLAM 框架的设置和参数
+//初始化 ORB-SLAM 框架的设置和参数
 OrbSlam::OrbSlam(const VisualSlamSettings::Ptr &vslam_set, const CameraSettings::Ptr &cam_set, const ImuSettings::Ptr &imu_set)
 : m_prev_keyid(-1),
   m_resizing((*vslam_set)["resizing"].toDouble()),

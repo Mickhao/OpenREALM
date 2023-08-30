@@ -7,6 +7,8 @@
 
 #include <realm_core/worker_thread_base.h>
 
+/*实现一个基本的工作线程类 WorkerThreadBase
+用于管理工作线程的启动、停止、重置等*/
 using namespace realm;
 
 //构造函数接受线程名称、睡眠时间和是否启用详细输出作为参数，并设置了各种线程控制标志和函数对象

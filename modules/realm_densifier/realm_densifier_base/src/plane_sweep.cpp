@@ -4,9 +4,10 @@
 
 #include <psl/exception.h>
 
+/*执行平面扫描（PlaneSweep）稠密化算法
+根据设置对输入帧进行稠密化处理并生成深度图*/
 using namespace realm;
 using namespace densifier;
-//执行平面扫描（Plane Sweep）稠密化算法
 
 //构造函数并初始化
 PlaneSweep::PlaneSweep(const DensifierSettings::Ptr &settings)

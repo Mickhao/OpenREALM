@@ -5,6 +5,8 @@
 
 #include <realm_core/loguru.h>
 
+/*用 Exiv2 库来读取图像的元数据信息*/
+
 namespace realm
 {
 

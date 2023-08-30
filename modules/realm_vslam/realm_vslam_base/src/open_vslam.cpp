@@ -9,9 +9,10 @@
 #include <openvslam/publish/frame_publisher.h>
 #include <future>
 
+/*//封装了OpenVSLAM库的功能
+用于执行基于视觉SLAM的定位和地图构建*/
 using namespace realm;
 
-//封装了OpenVSLAM库的功能，用于执行基于视觉SLAM的定位和地图构建
 OpenVslam::OpenVslam(const VisualSlamSettings::Ptr &vslam_set, const CameraSettings::Ptr &cam_set)
  : m_max_point_id(0),
    m_base_point_id(0),

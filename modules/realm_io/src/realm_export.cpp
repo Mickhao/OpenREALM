@@ -2,6 +2,8 @@
 
 #include <realm_io/realm_export.h>
 
+/*保存不同类型的数据到文件中*/
+
 namespace realm
 {
 namespace io

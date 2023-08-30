@@ -3,9 +3,9 @@
 #include <realm_vslam_base/visual_slam_settings_factory.h>
 #include <realm_io/utilities.h>
 
+/*根据设置文件中指定的方法类型加载对应的视觉SLAM设置*/
 using namespace realm;
 
-//工厂函数的入口点,根据设置文件中指定的方法类型加载对应的视觉SLAM设置
 VisualSlamSettings::Ptr VisualSlamSettingsFactory::load(const std::string &filepath, const std::string &directory)
 {
   //从设置文件中提取 "type" 参数的值，指定要加载的视觉SLAM方法类型

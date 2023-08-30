@@ -2,9 +2,9 @@
 
 #include <realm_densifier_base/densifier_factory.h>
 
+/*据传入的设置来创建相应的稠密化算法实例*/
 using namespace realm;
 
-//根据传入的设置来创建相应的稠密化算法实例
 DensifierIF::Ptr densifier::DensifierFactory::create(const DensifierSettings::Ptr &settings)
 {
   //检查设置中的稠密化算法类型是否为"DUMMY"

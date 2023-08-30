@@ -21,6 +21,7 @@
 #include <realm_io/cv_import.h>
 #include <realm_io/utilities.h>
 
+/*从文件加载图像数据*/
 using namespace realm;
 
 //用于从文件中加载图像数据

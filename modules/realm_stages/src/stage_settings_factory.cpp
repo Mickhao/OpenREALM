@@ -3,6 +3,7 @@
 #include <realm_stages/stage_settings_factory.h>
 #include <realm_stages/stage_settings.h>
 
+/*加载和创建不同阶段（stage）的设置对象*/
 using namespace realm;
 
 //根据阶段类型和设置文件路径，加载相应阶段的设置

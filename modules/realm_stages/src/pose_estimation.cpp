@@ -4,9 +4,14 @@
 
 #include <realm_stages/pose_estimation.h>
 
+/*从视觉SLAM获取图像和位姿
+并将它们转换为地理坐标系下的位姿
+(OpenREALM框架的第一个阶段)
+*/
 using namespace realm;
 using namespace stages;
 
+//初始化
 PoseEstimation::PoseEstimation(const StageSettings::Ptr &stage_set,
                                const VisualSlamSettings::Ptr &vslam_set,
                                const CameraSettings::Ptr &cam_set,

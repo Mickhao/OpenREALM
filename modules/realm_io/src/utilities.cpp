@@ -4,6 +4,7 @@
 
 #include <realm_io/utilities.h>
 
+/*管理文件和路径*/
 using namespace realm;
 
 bool io::fileExists(const std::string &filepath)

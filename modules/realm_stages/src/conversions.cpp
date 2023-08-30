@@ -1,7 +1,9 @@
 
 
 #include <realm_stages/conversions.h>
-//将图像数据和网格数据转换为点云和三角面片的表示
+
+/*将图像数据和网格数据转换为点云和三角面片*/
+
 namespace realm
 {
 

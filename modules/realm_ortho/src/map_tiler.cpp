@@ -2,8 +2,8 @@
 
 #include <realm_ortho/map_tiler.h>
 
+/*生成地图瓦片并执行地图坐标转换*/
 using namespace realm;
-//生成地图瓦片
 
 //设置是否启用详细输出
 MapTiler::MapTiler(bool verbosity)

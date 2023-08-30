@@ -4,6 +4,8 @@
 
 #include <realm_core/loguru.h>
 
+/*虚拟的地理参考系统
+用于处理相机坐标系与世界坐标系之间的变换关系*/
 using namespace realm;
 
 DummyReferencer::DummyReferencer(const cv::Mat &T_c2g)

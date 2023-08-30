@@ -3,6 +3,10 @@
 #include <realm_core/settings_base.h>
 
 using namespace realm;
+/*表示设置信息的基类
+提供了函数来从文件中读取或写入设置信息
+以及获取或设置参数值
+*/
 
 // PUBLIC
 //为了管理一组设置参数

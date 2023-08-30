@@ -2,6 +2,7 @@
 
 #include <realm_io/gdal_continuous_writer.h>
 
+/*连续写入地理信息系统 (GIS) 数据的后台线程类*/
 using namespace realm;
 
 io::GDALContinuousWriter::GDALContinuousWriter(const std::string &thread_name, int64_t sleep_time, bool verbose)

@@ -2,6 +2,8 @@
 
 #include <realm_io/exif_export.h>
 
+/*将图像保存为带有 EXIF 信息的 JPEG 文件*/
+
 namespace realm
 {
 namespace io

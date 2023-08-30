@@ -4,6 +4,7 @@
 
 #include <eigen3/Eigen/Eigen>
 
+/*从外部数据文件中加载各种类型的数据*/
 using namespace realm;
 
 //从YAML文件中加载相机参数

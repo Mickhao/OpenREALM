@@ -2,8 +2,8 @@
 
 #include <realm_ortho/delaunay_2d.h>
 
+/*使用 CGAL 库来构建二维的 Delaunay 三角剖分，以生成给定网格上的顶点*/
 using namespace realm;
-//使用 CGAL 库来构建二维的 Delaunay 三角剖分，以生成给定网格上的顶点
 
 Delaunay2D::Delaunay2D()
 {

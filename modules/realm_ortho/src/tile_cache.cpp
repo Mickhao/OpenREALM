@@ -6,8 +6,8 @@
 #include <realm_io/cv_import.h>
 #include <realm_io/cv_export.h>
 
+/*管理和缓存地图瓦片数据*/
 using namespace realm;
-//在多线程环境下管理和缓存地图瓦片数据
 
 //初始化
 TileCache::TileCache(const std::string &id, double sleep_time, const std::string &output_directory, bool verbose)

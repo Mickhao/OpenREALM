@@ -7,7 +7,10 @@
 #include <opencv2/calib3d.hpp>
 
 #include <realm_core/camera.h>
-
+/*表示相机模型
+提供了函数来进行图像坐标和世界坐标之间的转换
+以及图像的去畸变和投影
+*/
 namespace realm
 {
 namespace camera

@@ -22,6 +22,8 @@
 
 #include <realm_stages/tileing.h>
 
+/*对输入的地图数据进行瓦片化操作
+并将处理后的瓦片数据保存在缓存中*/
 using namespace realm;
 using namespace stages;
 

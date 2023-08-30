@@ -2,6 +2,7 @@
 
 #include <realm_stages/densification.h>
 
+/*稠密建图*/
 using namespace realm;
 using namespace stages;
 

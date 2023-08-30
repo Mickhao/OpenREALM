@@ -2,6 +2,9 @@
 
 #include <realm_core/timer.h>
 
+/*用于计时器功能的封装类
+提供了一些函数来启动或停止计时器
+以及获取计时器当前或总共经过的时间*/
 using namespace realm;
 
 //创建一个定时器对象

@@ -7,7 +7,9 @@
 #include <realm_io/cv_export.h>
 
 using namespace realm;
+//在多线程环境下管理和缓存地图瓦片数据
 
+//初始化
 TileCache::TileCache(const std::string &id, double sleep_time, const std::string &output_directory, bool verbose)
  : WorkerThreadBase("tile_cache_" + id, sleep_time, verbose),
    m_dir_toplevel(output_directory),
@@ -17,11 +19,13 @@ TileCache::TileCache(const std::string &id, double sleep_time, const std::string
   m_data_ready_functor = [=]{ return (m_do_update || isFinishRequested()); };
 }
 
+//析构函数，用于释放 TileCache 对象在内部分配的资源
 TileCache::~TileCache()
 {
   flushAll();
 }
 
+//设置输出目录的方法
 void TileCache::setOutputFolder(const std::string &dir)
 {
   std::lock_guard<std::mutex> lock(m_mutex_settings);

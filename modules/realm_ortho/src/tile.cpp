@@ -5,17 +5,19 @@
 using namespace realm;
 
 Tile::Tile(int zoom_level, int tx, int ty, const CvGridMap &map)
- : m_zoom_level(zoom_level),
+ : m_zoom_level(zoom_level),//zoom_level 表示缩放级别
    m_index(tx, ty),
    m_data(std::make_shared<CvGridMap>(map))
 {
 }
 
+//加锁
 void Tile::lock()
 {
   m_mutex_data.lock();
 }
 
+//解锁
 void Tile::unlock()
 {
   m_mutex_data.unlock();

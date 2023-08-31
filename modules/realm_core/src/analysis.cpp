@@ -8,7 +8,6 @@
 /*图像转换：将浮点型图像转换为彩色映射的图像*/
 using namespace realm;
 
-
 //使用了 analysis 中的 convertToColorMapFromCVC1 函数 ：将单通道浮点型图像转换为RGB彩色映射的图像
 cv::Mat analysis::convertToColorMapFromCVC1(const cv::Mat &img, const cv::Mat &mask, cv::ColormapTypes flag)
 {

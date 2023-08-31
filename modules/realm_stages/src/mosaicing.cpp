@@ -8,7 +8,7 @@
 #include <realm_io/pcl_export.h>
 #endif
 
-/*将正射影像进一步处理，生成高程图和几何校正的正射影像*/
+/*将正射影像进一步处理，生成高程图(DEM)和几何校正的正射影像*/
 using namespace realm;
 using namespace stages;
 

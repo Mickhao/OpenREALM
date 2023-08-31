@@ -4,6 +4,7 @@
 
 /*使用GDAL库来进行坐标转换*/
 using namespace realm;
+
 /*'convertToUTM'函数先根据输入的经度计算所属的UTM带号和带号字母。
 然后创建两个'GRSpatialReference'对象，分别用于WGS84和UTM的坐标系
 对 ogr_utm 进行设置，指定UTM带号和北半球/南半球。
